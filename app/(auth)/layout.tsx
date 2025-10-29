@@ -29,7 +29,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
               <cite className="auth-testimonial-author">- Alan K.</cite>
               <p className="max-md:text-xs text-gray-500">Retail Investor</p>
             </div>
-            <div className="flex item-center gap-0 5">
+            <div className="flex item-center gap-0.5">
               {Array.from({ length: 5 }, (_, index: number) => (
                 <Image
                   key={index}
