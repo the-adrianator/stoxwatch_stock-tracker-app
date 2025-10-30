@@ -5,6 +5,7 @@ import FooterLink from "@/components/forms/FooterLink";
 import InputField from "@/components/forms/InputField";
 import Selectfield from "@/components/forms/Selectfield";
 import { Button } from "@/components/ui/button";
+import { signUpWithEmail } from "@/lib/actions/auth.actions";
 import {
   INVESTMENT_GOALS,
   PREFERRED_INDUSTRIES,
@@ -12,9 +13,11 @@ import {
 } from "@/lib/constants";
 import { LoaderCircle } from "lucide-react";
 import { useForm } from "react-hook-form";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const SignUp = () => {
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -33,12 +36,16 @@ const SignUp = () => {
     },
   });
 
-  const onSubmit = (data: SignUpFormData) => {
+  const onSubmit = async (data: SignUpFormData) => {
     try {
-      console.log(data);
+      const result = await signUpWithEmail(data);
+      if (result.success) router.push("/");
     } catch (error) {
       console.error(error);
-      toast.error("Something went wrong");
+      toast.error("Sign up failed", {
+        description:
+          error instanceof Error ? error.message : "Failed to create account",
+      });
     }
   };
 

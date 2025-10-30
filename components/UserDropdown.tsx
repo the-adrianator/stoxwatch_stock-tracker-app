@@ -13,18 +13,22 @@ import { useRouter } from "next/navigation";
 import { Button } from "./ui/button";
 import { LogOut } from "lucide-react";
 import NavItems from "./NavItems";
+import { signOut } from "@/lib/actions/auth.actions";
+import { toast } from "sonner";
 
-const UserDropdown = () => {
+const UserDropdown = ({ user }: { user: User }) => {
   const router = useRouter();
 
-  const handleSignOut = () => {
-    router.push("/sign-in");
-  };
-
-  const user = {
-    name: "John Doe",
-    email: "john.doe@example.com",
-    image: "/assets/images/brandmark-design.png",
+  const handleSignOut = async () => {
+    const result = await signOut();
+    if (result.success) {
+      router.push("/sign-in");
+      toast.success("Signed out successfully");
+    } else {
+      toast.error("Failed to sign out", {
+        description: result.message ?? "Something went wrong",
+      });
+    }
   };
 
   return (
@@ -35,14 +39,14 @@ const UserDropdown = () => {
           className="flex items-center gap-3 text-gray-400 hover:text-yellow-500 cursor-pointer"
         >
           <Avatar className="h-8 w-8">
-            <AvatarImage src={user.image} />
+            <AvatarImage src={user?.image} />
             <AvatarFallback className="bg-yellow-500 text-yellow-900 text-sm font-bold">
               {user.name[0]}
             </AvatarFallback>
           </Avatar>
           <div className="hidden md:flex flex-col items-start">
             <span className="text-base font-medium text-gray-400">
-              {user.email}
+              {user.name}
             </span>
           </div>
         </Button>
