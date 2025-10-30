@@ -37,7 +37,14 @@ export const connectToMongoDB = async () => {
 		throw error;
 	}
 
-	console.log(`Connected to MongoDB ${process.env.NODE_ENV} - ${MONGODB_URI}`);
+	// redact credentials if wanting to show any URI info, else just log status and env
+	let uriInfo = '';
+	if (MONGODB_URI) {
+		// Use regex to redact credentials
+		uriInfo = MONGODB_URI.replace(/(mongodb(?:\+srv)?:\/\/)(.*?:.*?@)/, '$1****:****@');
+	}
+	// You may opt to log the redacted URI, but usually env+status is sufficient.
+	console.log(`Connected to MongoDB [${process.env.NODE_ENV}]${uriInfo ? ` - ${uriInfo}` : ''}`);
 
 	return cached.conn;
 }
