@@ -14,11 +14,16 @@ export const getAuth = async () => {
   
 	if (!db) throw new Error("Failed to connect to MongoDB");
 
+  // Validate critical env vars BEFORE use
+  const secret = process.env.BETTER_AUTH_SECRET;
+  if (!secret) throw new Error("BETTER_AUTH_SECRET environment variable is required but was not provided.");
+  const baseURL = process.env.BETTER_AUTH_URL;
+  if (!baseURL) throw new Error("BETTER_AUTH_URL environment variable is required but was not provided.");
+
 	authInstance = betterAuth({
 		database: mongodbAdapter(db as Db),
-
-		secret: process.env.BETTER_AUTH_SECRET,
-		baseURL: process.env.BETTER_AUTH_URL,
+		secret,
+		baseURL,
 		emailAndPassword: {
 			enabled: true,
 			disableSignUp: false,
