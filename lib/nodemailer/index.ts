@@ -21,9 +21,15 @@ export const transporter = nodemailer.createTransport({
 });
 
 export const sendWelcomeEmail = async ({ email, name, intro }: WelcomeEmailData) => {
-	const htmlTemplate = WELCOME_EMAIL_TEMPLATE
-		.replace('{{name}}', name)
-		.replace('{{intro}}', intro);
+    const DASHBOARD_URL =
+        process.env.NEXT_PUBLIC_BASE_URL ||
+        process.env.NEXT_PUBLIC_APP_URL ||
+        "/";
+
+    const htmlTemplate = WELCOME_EMAIL_TEMPLATE
+        .replace('{{name}}', name)
+        .replace('{{intro}}', intro)
+        .replaceAll('{{dashboardUrl}}', DASHBOARD_URL);
 
 	const mailOptions = {
 		from: `"StoxWatch" <${STOXWATCH_EMAIL}>`,
