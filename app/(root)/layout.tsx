@@ -1,10 +1,11 @@
 import React from "react";
 import Header from "@/components/Header";
-import { auth } from "@/lib/better-auth/auth";
+import { authPromise } from "@/lib/better-auth/auth";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 
 const Layout = async ({ children }: { children: React.ReactNode }) => {
+  const auth = await authPromise;
   const session = await auth.api.getSession({
     headers: await headers(),
   });

@@ -20,6 +20,9 @@ export const getAuth = async () => {
   const baseURL = process.env.BETTER_AUTH_URL;
   if (!baseURL) throw new Error("BETTER_AUTH_URL environment variable is required but was not provided.");
 
+  // Determine email verification requirement (true in prod or via feature flag)
+  const requireEmailVerification = process.env.NODE_ENV === 'production' || process.env.FEATURE_FLAG_EMAIL_VERIFICATION === 'true';
+
 	authInstance = betterAuth({
 		database: mongodbAdapter(db as Db),
 		secret,
@@ -27,7 +30,8 @@ export const getAuth = async () => {
 		emailAndPassword: {
 			enabled: true,
 			disableSignUp: false,
-			requireEmailVerification: false,
+			// Enable verification for prod/flag, false for dev/local.
+			requireEmailVerification,
 			minimumPasswordLength: 8,
 			maximumPasswordLength: 64,
 			autoSignIn: true,
@@ -40,4 +44,12 @@ export const getAuth = async () => {
 	return authInstance;
 }
 
-export const auth = await getAuth();
+export const authPromise = getAuth();
+export async function getAuthInstance() {
+  return getAuth();
+}
+// Optionally: allow direct but unsafe sync access to the singleton
+export function getAuthSync() {
+  if (!authInstance) throw new Error('Auth has not been initialized yet. Call and await getAuth() first.');
+  return authInstance;
+}
