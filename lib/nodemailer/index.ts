@@ -36,10 +36,17 @@ export const sendWelcomeEmail = async ({ email, name, intro }: WelcomeEmailData)
 		html: htmlTemplate,
 	};
 
-	await transporter.sendMail(mailOptions);
-
-	return {
-		success: true,
-		message: 'Welcome email sent successfully',
-	};
+	try {
+		await transporter.sendMail(mailOptions);
+		return {
+			success: true,
+			message: 'Welcome email sent successfully',
+		}
+	} catch (error) {
+		console.error('Failed to send welcome email:', error);
+		return {
+			success: false,
+			message: 'Failed to send welcome email',
+		}
+	}
 };
