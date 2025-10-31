@@ -7,7 +7,7 @@ import {
 } from '@/lib/utils';
 
 const FINNHUB_BASE_URL = 'https://finnhub.io/api/v1';
-const NEXT_PUBLIC_FINNHUB_API_KEY = process.env.NEXT_PUBLIC_FINNHUB_API_KEY;
+const FINNHUB_API_KEY = process.env.FINNHUB_API_KEY;
 
 const fetchJSON = async <T>(
   url: string,
@@ -33,7 +33,7 @@ export { fetchJSON };
 
 export const getNews = async (symbols?: string[]): Promise<MarketNewsArticle[]> => {
   try {
-    if (!NEXT_PUBLIC_FINNHUB_API_KEY) {
+    if (!FINNHUB_API_KEY) {
       throw new Error('FINNHUB_API_KEY is not set');
     }
 
@@ -61,7 +61,7 @@ export const getNews = async (symbols?: string[]): Promise<MarketNewsArticle[]> 
         const symbol = cleanedSymbols[symbolIndex];
 
         try {
-          const url = `${FINNHUB_BASE_URL}/company-news?symbol=${symbol}&from=${from}&to=${to}&token=${NEXT_PUBLIC_FINNHUB_API_KEY}`;
+          const url = `${FINNHUB_BASE_URL}/company-news?symbol=${symbol}&from=${from}&to=${to}&token=${FINNHUB_API_KEY}`;
           const data: RawNewsArticle[] = await fetchJSON(url) as RawNewsArticle[];
 
           // Find first valid article we haven't seen yet
@@ -103,7 +103,7 @@ const getGeneralMarketNews = async (
   _to: string
 ): Promise<MarketNewsArticle[]> => {
   try {
-    const url = `${FINNHUB_BASE_URL}/news?category=general&token=${NEXT_PUBLIC_FINNHUB_API_KEY}`;
+    const url = `${FINNHUB_BASE_URL}/news?category=general&token=${FINNHUB_API_KEY}`;
     const data: RawNewsArticle[] = await fetchJSON(url) as RawNewsArticle[];
 
     if (!data || !Array.isArray(data)) {
