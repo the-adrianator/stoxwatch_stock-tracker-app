@@ -6,6 +6,8 @@ dotenv.config();
 
 const MONGODB_URI = process.env.MONGO_URI;
 
+console.log('MONGODB_URI', MONGODB_URI);
+
 declare global {
   var mongooseCache: {
 		conn: typeof mongoose | null;
