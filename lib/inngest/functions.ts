@@ -4,7 +4,7 @@ import { NEWS_SUMMARY_EMAIL_PROMPT, PERSONALIZED_WELCOME_EMAIL_PROMPT } from "@/
 import { getAllUsersForNewsDeliveryEmail } from "@/lib/actions/user.actions";
 import { getWatchlistSymbolsByEmail } from "@/lib/actions/watchlist.actions";
 import { getNews } from "@/lib/actions/finnhub.actions";
-import { formatDateToday } from "@/lib/utils";
+import { getFormattedTodayDate } from "@/lib/utils";
 
 export const sendSignUpEmail = inngest.createFunction(
 	{ id: "sign-up-email" },
@@ -90,8 +90,8 @@ export const sendDailyNewsSummary = inngest.createFunction(
 
 		// Step #2: For each user, get watchlist symbols -> fetch news (fallback to general if no symbols)
 		const results = await step.run('fetch-user-news', async () => {
-			const perUser: Array<{ user: UserForNewsEmail; articles: MarketNewsArticle[] }> = [];
-			for (const user of users as UserForNewsEmail[]) {
+			const perUser: Array<{ user: User; articles: MarketNewsArticle[] }> = [];
+			for (const user of users as User[]) {
 					try {
 							const symbols = await getWatchlistSymbolsByEmail(user.email);
 							let articles = await getNews(symbols);
@@ -129,22 +129,31 @@ export const sendDailyNewsSummary = inngest.createFunction(
 				const newsContent = (part && 'text' in part ? part.text : null) || 'No market news.'
 
 				userNewsSummaries.push({ user, newsContent });
-		} catch {
-				console.error('Failed to summarize news for : ', user.email);
+		} catch (error) {
+				console.error('Failed to summarize news for : ', user.email, error);
 				userNewsSummaries.push({ user, newsContent: null });
 		}
 	}	
 
 	// Step #4: (placeholder) Send the emails
 	await step.run('send-news-emails', async () => {
-		await Promise.all(
+		await Promise.allSettled(
 			userNewsSummaries.map(async ({ user, newsContent}) => {
 				if(!newsContent) return false;
 
-				return await sendNewsSummaryEmail({ name: user.name, email: user.email, date: formatDateToday, newsContent })
+				try {
+					return await sendNewsSummaryEmail({
+						name: user.name,
+						email: user.email,
+						date: getFormattedTodayDate(),
+						newsContent,
+					})
+				} catch (error) {
+					console.error('Failed to send news summary email for : ', user.email, error);
+					return false;
+				}
 			})
 		)
 	})
-
 	return { success: true, message: 'Daily news summary emails sent successfully' }
 })
