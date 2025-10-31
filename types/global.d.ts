@@ -70,6 +70,20 @@ declare global {
 			intro: string;
 	};
 
+	type NewsSummaryEmailData = {
+			email: string;
+			name?: string;
+			date: string;
+			newsContent: string;
+			newsArticles?: MarketNewsArticle[];
+	};
+
+	type UserForNewsEmail = {
+			id: string;
+			email: string;
+			name: string;
+	};
+
 	type User = {
 			id: string;
 			name: string;
