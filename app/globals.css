@@ -257,7 +257,7 @@
     @apply bg-yellow-500 text-base hover:bg-yellow-500 text-gray-900 w-full rounded h-11 font-semibold cursor-pointer;
   }
   .watchlist-remove {
-    @apply bg-red-500! hover:bg-red-500! text-gray-900!
+    @apply bg-red-500! hover:bg-red-300! text-gray-900! rounded h-11 font-semibold cursor-pointer;
   }
   .watchlist-empty-container {
     @apply container gap-8 flex-col items-center md:mt-10 p-6 text-center;

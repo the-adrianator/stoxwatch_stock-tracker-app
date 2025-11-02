@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useTransition } from "react";
 import {
   CommandDialog,
   CommandInput,
@@ -10,7 +10,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Loader2, Star, TrendingUp } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useDebounce } from "@/hooks/useDebounce";
+import {
+  addToWatchlist,
+  removeFromWatchlist,
+} from "@/lib/actions/watchlist.actions";
+import { toast } from "sonner";
 
 export function SearchCommand({
   renderAs = "button",
@@ -22,6 +28,8 @@ export function SearchCommand({
   const [loading, setLoading] = useState(false);
   const [stocks, setStocks] =
     useState<StockWithWatchlistStatus[]>(initialStocks);
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   const isSearchMode = !!searchTerm.trim();
   const displayStocks = isSearchMode ? stocks : stocks.slice(0, 10);
@@ -76,6 +84,52 @@ export function SearchCommand({
     setOpen(false);
     setSearchTerm("");
     setStocks(initialStocks);
+  };
+
+  const handleToggleWatchlist = (
+    e: React.MouseEvent,
+    stock: StockWithWatchlistStatus
+  ) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    startTransition(async () => {
+      if (stock.isInWatchlist) {
+        // Remove from watchlist
+        const result = await removeFromWatchlist(stock.symbol);
+
+        if (result.success) {
+          toast.success(result.message);
+          // Update local state
+          setStocks((prevStocks) =>
+            prevStocks.map((s) =>
+              s.symbol === stock.symbol ? { ...s, isInWatchlist: false } : s
+            )
+          );
+          // Refresh server data to update watchlist page
+          router.refresh();
+        } else {
+          toast.error(result.message);
+        }
+      } else {
+        // Add to watchlist
+        const result = await addToWatchlist(stock.symbol, stock.name);
+
+        if (result.success) {
+          toast.success(result.message);
+          // Update local state
+          setStocks((prevStocks) =>
+            prevStocks.map((s) =>
+              s.symbol === stock.symbol ? { ...s, isInWatchlist: true } : s
+            )
+          );
+          // Refresh server data to update watchlist page
+          router.refresh();
+        } else {
+          toast.error(result.message);
+        }
+      }
+    });
   };
 
   return (
@@ -139,7 +193,21 @@ export function SearchCommand({
                         {stock.symbol} | {stock.exchange} | {stock.type}
                       </div>
                     </div>
-                    <Star />
+                    <button
+                      onClick={(e) => handleToggleWatchlist(e, stock)}
+                      disabled={isPending}
+                      className="text-gray-400 hover:text-yellow-500 transition-colors disabled:opacity-50"
+                      aria-label={
+                        stock.isInWatchlist
+                          ? "Remove from watchlist"
+                          : "Add to watchlist"
+                      }
+                    >
+                      <Star
+                        className="size-5"
+                        fill={stock.isInWatchlist ? "currentColor" : "none"}
+                      />
+                    </button>
                   </Link>
                 </li>
               ))}

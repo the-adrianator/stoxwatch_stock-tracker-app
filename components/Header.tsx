@@ -3,9 +3,20 @@ import Link from "next/link";
 import NavItems from "@/components/NavItems";
 import UserDropdown from "@/components/UserDropdown";
 import { searchStocks } from "@/lib/actions/finnhub.actions";
+import { getWatchlistSymbolsByEmail } from "@/lib/actions/watchlist.actions";
 
 const Header = async ({ user }: { user: User }) => {
-  const initialStocks = await searchStocks();
+  const [stocks, watchlistSymbols] = await Promise.all([
+    searchStocks(),
+    getWatchlistSymbolsByEmail(user.email),
+  ]);
+
+  // Enrich stocks with watchlist status
+  const initialStocks = stocks.map((stock) => ({
+    ...stock,
+    isInWatchlist: watchlistSymbols.includes(stock.symbol),
+  }));
+
   return (
     <header className="sticky top-0 header">
       <div className="container header-wrapper">
