@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   CommandDialog,
   CommandInput,
@@ -39,12 +39,13 @@ export function SearchCommand({
     return () => window.removeEventListener("keydown", down);
   }, []);
 
-  const handleSearch = async () => {
-    if (!isSearchMode) return setStocks(initialStocks);
+  const handleSearch = useCallback(async () => {
+    const trimmed = searchTerm.trim();
+    if (!trimmed) return setStocks(initialStocks);
 
     setLoading(true);
     try {
-      const stocks = await searchStocks(searchTerm.trim());
+      const stocks = await searchStocks(trimmed);
       setStocks(stocks);
     } catch (error) {
       console.error("Error searching stocks:", error);
@@ -52,13 +53,13 @@ export function SearchCommand({
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchTerm, initialStocks]);
 
   const debouncedSearch = useDebounce(handleSearch, 500);
 
   useEffect(() => {
     debouncedSearch();
-  }, [searchTerm]);
+  }, [searchTerm, debouncedSearch]);
 
   const handleSelectStock = () => {
     setOpen(false);
@@ -111,7 +112,10 @@ export function SearchCommand({
                 {`(${displayStocks?.length || 0})`}
               </div>
               {displayStocks.map((stock, i) => (
-                <li key={stock.symbol} className="search-item">
+                <li
+                  key={`${stock.symbol}-${stock.exchange}-${i}`}
+                  className="search-item"
+                >
                   <Link
                     href={`/stocks/${stock.symbol}`}
                     className="search-item-link"
