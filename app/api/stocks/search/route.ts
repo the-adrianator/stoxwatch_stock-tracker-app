@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { searchStocks } from "@/lib/actions/finnhub.actions";
+import { authPromise } from "@/lib/better-auth/auth";
+import { getWatchlistSymbolsByEmail } from "@/lib/actions/watchlist.actions";
 
 export async function GET(request: NextRequest) {
   try {
@@ -7,6 +9,21 @@ export async function GET(request: NextRequest) {
     const query = searchParams.get("q") || undefined;
 
     const stocks = await searchStocks(query);
+
+    // Enrich with watchlist status
+    const auth = await authPromise;
+    const session = await auth.api.getSession({
+      headers: request.headers,
+    });
+
+    if (session?.user?.email) {
+      const watchlistSymbols = await getWatchlistSymbolsByEmail(session.user.email);
+      const enrichedStocks = stocks.map((stock) => ({
+        ...stock,
+        isInWatchlist: watchlistSymbols.includes(stock.symbol),
+      }));
+      return NextResponse.json(enrichedStocks);
+    }
 
     return NextResponse.json(stocks);
   } catch (error) {
@@ -24,6 +41,21 @@ export async function POST(request: NextRequest) {
     const query = body?.query || body?.q || undefined;
 
     const stocks = await searchStocks(query);
+
+    // Enrich with watchlist status
+    const auth = await authPromise;
+    const session = await auth.api.getSession({
+      headers: request.headers,
+    });
+
+    if (session?.user?.email) {
+      const watchlistSymbols = await getWatchlistSymbolsByEmail(session.user.email);
+      const enrichedStocks = stocks.map((stock) => ({
+        ...stock,
+        isInWatchlist: watchlistSymbols.includes(stock.symbol),
+      }));
+      return NextResponse.json(enrichedStocks);
+    }
 
     return NextResponse.json(stocks);
   } catch (error) {

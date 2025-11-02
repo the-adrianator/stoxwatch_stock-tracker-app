@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { Star, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 import {
   addToWatchlist,
   removeFromWatchlist,
@@ -19,53 +20,38 @@ const WatchlistButton = ({
 }: WatchlistButtonProps) => {
   const [isInWatchlist, setIsInWatchlist] = useState(initialIsInWatchlist);
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
-  const handleToggleWatchlist = async (userEmail: string) => {
+  const handleClick = () => {
     startTransition(async () => {
       if (isInWatchlist) {
         // Remove from watchlist
-        const result = await removeFromWatchlist(userEmail, symbol);
+        const result = await removeFromWatchlist(symbol);
 
         if (result.success) {
           setIsInWatchlist(false);
           toast.success(result.message);
           onWatchlistChange?.(symbol, false);
+          // Refresh server data to update watchlist page
+          router.refresh();
         } else {
           toast.error(result.message);
         }
       } else {
         // Add to watchlist
-        const result = await addToWatchlist(userEmail, symbol, company);
+        const result = await addToWatchlist(symbol, company);
 
         if (result.success) {
           setIsInWatchlist(true);
           toast.success(result.message);
           onWatchlistChange?.(symbol, true);
+          // Refresh server data to update watchlist page
+          router.refresh();
         } else {
           toast.error(result.message);
         }
       }
     });
-  };
-
-  // Get user email from session (you'll need to import this from your auth)
-  const handleClick = async () => {
-    // For now, we'll need to get the user email from the session
-    // This is a placeholder - you'll need to implement proper auth session retrieval
-    try {
-      const response = await fetch("/api/auth/session");
-      const session = await response.json();
-
-      if (!session?.user?.email) {
-        toast.error("Please sign in to manage your watchlist");
-        return;
-      }
-
-      await handleToggleWatchlist(session.user.email);
-    } catch (error) {
-      toast.error("Failed to update watchlist");
-      console.error("Watchlist error:", error);
-    }
   };
 
   if (type === "icon") {
@@ -94,9 +80,15 @@ const WatchlistButton = ({
       onClick={handleClick}
       disabled={isPending}
       variant={isInWatchlist ? "outline" : "default"}
-      className="w-full watchlist-btn"
+      className={`w-full ${
+        isInWatchlist ? "watchlist-remove" : "watchlist-btn"
+      }`}
     >
-      <Star className="size-4" fill={isInWatchlist ? "currentColor" : "none"} />
+      {isInWatchlist ? (
+        <Trash2 className="size-4" />
+      ) : (
+        <Star className="size-4" fill="none" />
+      )}
       {isInWatchlist ? "Remove from Watchlist" : "Add to Watchlist"}
     </Button>
   );
