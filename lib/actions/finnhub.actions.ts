@@ -204,13 +204,30 @@ export const searchStocks = cache(async (query?: string): Promise<StockWithWatch
       results = Array.isArray(data?.result) ? data.result : [];
     }
 
+    const extractExchange = (value?: string) => {
+      if (!value) return undefined;
+      const separators = ['.', ':'];
+      for (const separator of separators) {
+        if (value.includes(separator)) {
+          const part = value.split(separator).pop();
+          if (part && part !== value) {
+            return part.toUpperCase();
+          }
+        }
+      }
+      return undefined;
+    };
+
     const mapped: StockWithWatchlistStatus[] = results
       .map((r) => {
         const upper = (r.symbol || '').toUpperCase();
         const name = r.description || upper;
-        const exchangeFromDisplay = (r.displaySymbol as string | undefined) || undefined;
         const exchangeFromProfile = (r as any).__exchange as string | undefined;
-        const exchange = exchangeFromDisplay || exchangeFromProfile || 'US';
+        const exchange =
+          exchangeFromProfile ??
+          extractExchange(r.symbol) ??
+          extractExchange(r.displaySymbol) ??
+          'US';
         const type = r.type || 'Stock';
         const item: StockWithWatchlistStatus = {
           symbol: upper,
