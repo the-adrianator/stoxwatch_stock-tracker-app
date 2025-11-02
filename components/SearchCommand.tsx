@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button";
 import { Loader2, Star, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { useDebounce } from "@/hooks/useDebounce";
-import { searchStocks } from "../lib/actions/finnhub.actions";
 
 export function SearchCommand({
   renderAs = "button",
@@ -45,7 +44,19 @@ export function SearchCommand({
 
     setLoading(true);
     try {
-      const stocks = await searchStocks(trimmed);
+      const response = await fetch("/api/stocks/search", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ query: trimmed }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to search stocks");
+      }
+
+      const stocks = await response.json();
       setStocks(stocks);
     } catch (error) {
       console.error("Error searching stocks:", error);
