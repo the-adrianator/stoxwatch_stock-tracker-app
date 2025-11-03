@@ -17,11 +17,15 @@ export const getAuth = async () => {
   // Validate critical env vars BEFORE use
   const secret = process.env.BETTER_AUTH_SECRET;
   if (!secret) throw new Error("BETTER_AUTH_SECRET environment variable is required but was not provided.");
-  const baseURL = process.env.BETTER_AUTH_URL;
-  if (!baseURL) throw new Error("BETTER_AUTH_URL environment variable is required but was not provided.");
+  
+  // Resolve baseURL with Vercel support (handles preview/prod domains)
+  // Priority: BETTER_AUTH_URL > VERCEL_URL (derived) > NEXT_PUBLIC_BASE_URL > NEXT_PUBLIC_APP_URL
+  const vercelUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined;
+  const baseURL = process.env.BETTER_AUTH_URL || vercelUrl || process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_APP_URL;
+  if (!baseURL) throw new Error("BETTER_AUTH_URL, NEXT_PUBLIC_BASE_URL, or NEXT_PUBLIC_APP_URL environment variable is required but was not provided.");
 
-  // Determine email verification requirement (true in prod or via feature flag)
-  const requireEmailVerification = process.env.NODE_ENV === 'production' || process.env.FEATURE_FLAG_EMAIL_VERIFICATION === 'true';
+  // Email verification is controlled by explicit feature flag only
+  const requireEmailVerification = process.env.FEATURE_FLAG_EMAIL_VERIFICATION === 'true';
 
 	authInstance = betterAuth({
 		database: mongodbAdapter(db as Db),
