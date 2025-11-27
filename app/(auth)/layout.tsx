@@ -32,7 +32,7 @@ const Layout = async ({ children }: { children: React.ReactNode }) => {
       <section className="auth-right-section">
         <div className="z-10 relative lg:mt-4 lg:mb-16">
           <blockquote className="auth-blockquote">
-            &quot;The best way to predict the future is to invent it.&quot;
+            &quot;The best way to predict the future is to invest in it.&quot;
           </blockquote>
           <div className="flex items-center justify-between">
             <div>
