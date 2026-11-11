@@ -48,7 +48,6 @@ export const getAuth = async () => {
 	return authInstance;
 }
 
-export const authPromise = getAuth();
 export async function getAuthInstance() {
   return getAuth();
 }

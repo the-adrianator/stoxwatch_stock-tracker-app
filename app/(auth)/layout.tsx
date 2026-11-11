@@ -1,12 +1,15 @@
-import { authPromise } from "@/lib/better-auth/auth";
+import { getAuth } from "@/lib/better-auth/auth";
 import { headers } from "next/headers";
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import React from "react";
 
+// Reads the session on every request, so it must never be prerendered at build time.
+export const dynamic = "force-dynamic";
+
 const Layout = async ({ children }: { children: React.ReactNode }) => {
-  const auth = await authPromise;
+  const auth = await getAuth();
   const session = await auth.api.getSession({
     headers: await headers(),
   });

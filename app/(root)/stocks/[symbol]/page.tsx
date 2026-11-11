@@ -1,6 +1,6 @@
 import TradingViewWidget from "@/components/TradingViewWidget";
 import WatchlistButton from "@/components/WatchlistButton";
-import { authPromise } from "@/lib/better-auth/auth";
+import { getAuth } from "@/lib/better-auth/auth";
 import { headers } from "next/headers";
 import { checkWatchlistStatus } from "@/lib/actions/watchlist.actions";
 import {
@@ -20,7 +20,7 @@ const StockDetails = async ({ params }: StockDetailsPageProps) => {
   const symbolUpper = symbol.toUpperCase();
 
   // Get user session
-  const auth = await authPromise;
+  const auth = await getAuth();
   const session = await auth.api.getSession({
     headers: await headers(),
   });

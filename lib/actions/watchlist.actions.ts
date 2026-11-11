@@ -2,7 +2,7 @@
 
 import { connectToMongoDB } from '@/database/mongoose';
 import { Watchlist } from '@/database/models/watchlist.model';
-import { authPromise } from '@/lib/better-auth/auth';
+import { getAuth } from '@/lib/better-auth/auth';
 import { headers } from 'next/headers';
 
 export const getWatchlistSymbolsByEmail = async (
@@ -83,7 +83,7 @@ export const addToWatchlist = async (
 ): Promise<{ success: boolean; message: string }> => {
   try {
     // Get user session
-    const auth = await authPromise;
+    const auth = await getAuth();
     const session = await auth.api.getSession({
       headers: await headers(),
     });
@@ -138,7 +138,7 @@ export const removeFromWatchlist = async (
 ): Promise<{ success: boolean; message: string }> => {
   try {
     // Get user session
-    const auth = await authPromise;
+    const auth = await getAuth();
     const session = await auth.api.getSession({
       headers: await headers(),
     });
@@ -188,7 +188,7 @@ export const getUserWatchlist = async (): Promise<Array<{
 }>> => {
   try {
     // Get user session
-    const auth = await authPromise;
+    const auth = await getAuth();
     const session = await auth.api.getSession({
       headers: await headers(),
     });
