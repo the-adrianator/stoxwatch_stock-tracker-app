@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { searchStocks } from "@/lib/actions/finnhub.actions";
-import { authPromise } from "@/lib/better-auth/auth";
+import { getAuth } from "@/lib/better-auth/auth";
 import { getWatchlistSymbolsByEmail } from "@/lib/actions/watchlist.actions";
 
 export async function GET(request: NextRequest) {
@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     const stocks = await searchStocks(query);
 
     // Enrich with watchlist status
-    const auth = await authPromise;
+    const auth = await getAuth();
     const session = await auth.api.getSession({
       headers: request.headers,
     });
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     const stocks = await searchStocks(query);
 
     // Enrich with watchlist status
-    const auth = await authPromise;
+    const auth = await getAuth();
     const session = await auth.api.getSession({
       headers: request.headers,
     });
